@@ -18,7 +18,6 @@ enum class ConnectionState { Idle, Connecting, Connected }
 
 data class UiState(
     val scanning: Boolean = false,
-    val onlyHeartRate: Boolean = true,
     val devices: List<ScannedDevice> = emptyList(),
     val connection: ConnectionState = ConnectionState.Idle,
     val deviceLabel: String = "",
@@ -38,16 +37,11 @@ class BleViewModel(app: Application) : AndroidViewModel(app) {
     private var scanJob: Job? = null
     private var connectJob: Job? = null
 
-    fun setOnlyHeartRate(value: Boolean) {
-        _state.update { it.copy(onlyHeartRate = value) }
-        if (_state.value.scanning) startScan()
-    }
-
     fun startScan() {
         scanJob?.cancel()
         _state.update { it.copy(scanning = true, devices = emptyList(), error = null) }
         scanJob = viewModelScope.launch {
-            ble.scan(_state.value.onlyHeartRate)
+            ble.scan()
                 .catch { e ->
                     _state.update { it.copy(scanning = false, error = e.message ?: "Scan failed.") }
                 }

@@ -11,12 +11,10 @@ import android.bluetooth.BluetoothManager
 import android.bluetooth.BluetoothProfile
 import android.bluetooth.BluetoothStatusCodes
 import android.bluetooth.le.ScanCallback
-import android.bluetooth.le.ScanFilter
 import android.bluetooth.le.ScanResult
 import android.bluetooth.le.ScanSettings
 import android.content.Context
 import android.os.Build
-import android.os.ParcelUuid
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
@@ -40,7 +38,7 @@ class BleManager(context: Context) {
         (appContext.getSystemService(Context.BLUETOOTH_SERVICE) as BluetoothManager).adapter
 
     /** Emits every advertisement we see. Collect to scan, cancel to stop. */
-    fun scan(onlyHeartRate: Boolean): Flow<ScannedDevice> = callbackFlow {
+    fun scan(): Flow<ScannedDevice> = callbackFlow {
         if (adapter == null || !adapter.isEnabled) {
             close(IllegalStateException("Bluetooth is off. Turn it on and try again."))
             return@callbackFlow
@@ -67,17 +65,12 @@ class BleManager(context: Context) {
             }
         }
 
-        val filters = if (onlyHeartRate) {
-            listOf(ScanFilter.Builder().setServiceUuid(ParcelUuid(HEART_RATE_SERVICE)).build())
-        } else {
-            emptyList()
-        }
         val settings = ScanSettings.Builder()
             .setScanMode(ScanSettings.SCAN_MODE_LOW_LATENCY)
             .build()
 
         try {
-            scanner.startScan(filters, settings, callback)
+            scanner.startScan(null, settings, callback)
         } catch (e: SecurityException) {
             close(IllegalStateException("Bluetooth permission is missing."))
             return@callbackFlow

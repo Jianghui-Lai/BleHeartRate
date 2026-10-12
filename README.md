@@ -1,42 +1,66 @@
-# BLE Heart Rate (Android, Kotlin, Jetpack Compose)
+# BLE Heart Rate Monitor
 
-A small app that scans for Bluetooth LE heart-rate devices, connects over GATT,
-and shows the live heart rate. Built to practise the Central side of BLE.
+An Android app that connects to a Bluetooth Low Energy (BLE) heart-rate device and shows the live heart rate, color-coded by intensity zone.
+
+Built with **Kotlin**, **Jetpack Compose**, **MVVM**, and **Coroutines / Flow**.
+
+## Features
+
+- Scan for nearby BLE devices and connect over GATT
+- Live heart rate from the standard Heart Rate Service
+- Color-coded zones: calm (green), aerobic (orange), high intensity (red)
+- On-screen debug panel showing each BLE step and the raw bytes received
+- Unit tests for the heart-rate parser and the zone boundaries
+
+## Screenshots
+
+<p align="center">
+  <img src="docs/images/scan.png" alt="Scan screen" width="180">
+  &nbsp;&nbsp;
+  <img src="docs/images/zone-calm.png" alt="Calm zone" width="180">
+  &nbsp;&nbsp;
+  <img src="docs/images/zone-high.png" alt="High intensity zone" width="180">
+</p>
+
+<p align="center"><em>Scan · Calm · High intensity</em></p>
 
 ## Run it
 
-1. Open this folder in Android Studio (JDK 17). Let Gradle sync.
-   If Android Studio offers to upgrade the Android Gradle Plugin, accept.
-2. Connect a **physical** Android phone (USB debugging on). Emulators do not support BLE.
-3. Press Run.
+1. Open the project in Android Studio and let Gradle sync.
+2. Connect a **physical Android phone** (Android 8.0+, USB debugging on). Emulators do not support BLE.
+3. Press **Run**, allow Bluetooth access, tap **Start scan**, and tap a device.
 
-## Test it with an iPhone as the fake heart-rate device
+## Try it without a heart-rate monitor
 
-1. Install **LightBlue** on the iPhone, open Virtual Devices, and switch on **Heart Rate**.
-   Keep the app in the foreground.
-2. On the Android phone: allow Bluetooth access, tap **Start scan**, tap the iPhone in the list.
-3. The heart-rate number updates as the iPhone sends new values.
+1. On a second phone, install **LightBlue** and switch on **Virtual Devices → Heart Rate**.
+2. Scan with this app and connect to that phone.
+3. Send a value in LightBlue and watch the app update:
+   - `00 48` is 72 bpm, shown as Calm
+   - `00 78` is 120 bpm, shown as Aerobic
+   - `00 B4` is 180 bpm, shown as High intensity
 
-If nothing shows up: turn off "Heart-rate devices only", and check Bluetooth is on.
-On Android 11 and below, Location must also be on for scanning.
+If the device does not appear, turn off **Heart-rate devices only**.
 
-## Structure
+## How it works
 
-| File | Role |
-|---|---|
-| `ble/BleManager.kt` | Scan, connect, notifications, wrapped as Kotlin Flows (`callbackFlow`) |
-| `ble/HeartRateParser.kt` | Decodes the Heart Rate Measurement bytes (pure Kotlin) |
-| `ble/Models.kt` | `ScannedDevice`, `GattEvent` |
-| `ui/BleViewModel.kt` | MVVM: holds `StateFlow<UiState>`, runs scan/connect jobs in `viewModelScope` |
-| `ui/Screens.kt` | Compose screens: permission, scan list, heart-rate display |
-| `MainActivity.kt` | Permissions, back handling, screen switching |
-| `test/.../HeartRateParserTest.kt` | JUnit tests for the parser |
+```mermaid
+flowchart LR
+    D["Heart-rate device"] -- "BLE notifications" --> M["BleManager<br/>callbackFlow"]
+    M -- "Flow of events" --> V["BleViewModel<br/>StateFlow"]
+    V --> U["Compose UI"]
+```
 
-## BLE flow in four lines
+The app scans, connects, finds the heart-rate characteristic, and asks the device to send notifications. Each notification is parsed and flows through `StateFlow` to the screen.
 
-1. Peripheral (iPhone) advertises the Heart Rate service (UUID 0x180D).
-2. Central (this app) scans, then calls `connectGatt`.
-3. After `discoverServices`, it finds characteristic 0x2A37 and writes the
-   notification descriptor (0x2902).
-4. Each notification arrives in `onCharacteristicChanged`, is parsed, and flows
-   to the UI through `StateFlow`.
+## Key files
+
+- `ble/BleManager.kt`: scan, connect, and notifications as Kotlin Flows
+- `ble/HeartRateParser.kt`: decodes the heart-rate bytes
+- `ui/BleViewModel.kt`: screen state (MVVM)
+- `ui/HeartRateZone.kt`: maps a reading to a zone
+
+## Limitations
+
+- Tested with a simulated device (LightBlue on an iPhone), not yet with a physical chest strap or watch.
+- Zones are fixed thresholds for display only, not medical advice.
+- No pairing flow, automatic reconnect, or background operation.

@@ -1,5 +1,6 @@
 package com.example.bleheartrate.ui
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -8,17 +9,17 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -47,7 +48,6 @@ fun ScanScreen(
     state: UiState,
     onStart: () -> Unit,
     onStop: () -> Unit,
-    onFilterChange: (Boolean) -> Unit,
     onDeviceClick: (ScannedDevice) -> Unit,
 ) {
     Column(Modifier.fillMaxSize().padding(16.dp)) {
@@ -55,10 +55,6 @@ fun ScanScreen(
             Button(onClick = if (state.scanning) onStop else onStart) {
                 Text(if (state.scanning) "Stop scan" else "Start scan")
             }
-            Spacer(Modifier.weight(1f))
-            Text("Heart-rate devices only")
-            Spacer(Modifier.width(8.dp))
-            Switch(checked = state.onlyHeartRate, onCheckedChange = onFilterChange)
         }
 
         state.error?.let {
@@ -106,8 +102,17 @@ private fun DeviceRow(device: ScannedDevice, onClick: (ScannedDevice) -> Unit) {
     }
 }
 
+private fun HeartRateZone.color(): Color = when (this) {
+    HeartRateZone.Calm -> Color(0xFF2E7D32)
+    HeartRateZone.Aerobic -> Color(0xFFC25400)
+    HeartRateZone.High -> Color(0xFFC62828)
+}
+
 @Composable
 fun HeartRateScreen(state: UiState, onDisconnect: () -> Unit) {
+    val zone = state.heartRate?.let { HeartRateZone.fromBpm(it) }
+    val zoneColor = zone?.color() ?: MaterialTheme.colorScheme.onSurface
+
     Column(
         modifier = Modifier.fillMaxSize().padding(24.dp),
         verticalArrangement = Arrangement.Center,
@@ -128,8 +133,20 @@ fun HeartRateScreen(state: UiState, onDisconnect: () -> Unit) {
             text = state.heartRate?.toString() ?: "--",
             fontSize = 96.sp,
             fontWeight = FontWeight.Bold,
+            color = zoneColor,
         )
         Text("beats per minute", style = MaterialTheme.typography.bodyMedium)
+        if (zone != null) {
+            Spacer(Modifier.padding(8.dp))
+            Text(
+                text = "${zone.label} · ${zone.rangeText}",
+                color = Color.White,
+                fontWeight = FontWeight.Medium,
+                modifier = Modifier
+                    .background(zoneColor, RoundedCornerShape(16.dp))
+                    .padding(horizontal = 16.dp, vertical = 6.dp),
+            )
+        }
         Spacer(Modifier.padding(24.dp))
         Button(onClick = onDisconnect) { Text("Disconnect") }
         Spacer(Modifier.padding(16.dp))

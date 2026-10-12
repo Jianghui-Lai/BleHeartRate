@@ -79,7 +79,6 @@ private fun BleApp(vm: BleViewModel = viewModel()) {
                     state = state,
                     onStart = vm::startScan,
                     onStop = vm::stopScan,
-                    onFilterChange = vm::setOnlyHeartRate,
                     onDeviceClick = vm::connect,
                 )
             }
