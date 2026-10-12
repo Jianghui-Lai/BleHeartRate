@@ -14,15 +14,9 @@ Built with **Kotlin**, **Jetpack Compose**, **MVVM**, and **Coroutines / Flow**.
 
 ## Screenshots
 
-<p align="center">
-  <img src="docs/images/scan.png" alt="Scan screen" width="180">
-  &nbsp;&nbsp;
-  <img src="docs/images/zone-calm.png" alt="Calm zone" width="180">
-  &nbsp;&nbsp;
-  <img src="docs/images/zone-high.png" alt="High intensity zone" width="180">
-</p>
-
-<p align="center"><em>Scan · Calm · High intensity</em></p>
+| Waiting | Calm | Aerobic | High intensity |
+| :-: | :-: | :-: | :-: |
+| ![Waiting for data](docs/images/waiting.png) | ![Calm zone](docs/images/zone-calm.png) | ![Aerobic zone](docs/images/zone-aerobic.png) | ![High intensity zone](docs/images/zone-high.png) |
 
 ## Run it
 
