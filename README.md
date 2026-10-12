@@ -22,7 +22,7 @@ Built with **Kotlin**, **Jetpack Compose**, **MVVM**, and **Coroutines / Flow**.
 
 1. Open the project in Android Studio and let Gradle sync.
 2. Connect a **physical Android phone** (Android 8.0+, USB debugging on). Emulators do not support BLE.
-3. Press **Run**, allow Bluetooth access, tap **Start scan**, and tap a device.
+3. Press **Run**, allow Bluetooth access, tap **Start scan**, and tap a heart-rate device.
 
 ## Try it without a heart-rate monitor
 
