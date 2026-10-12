@@ -33,8 +33,6 @@ Built with **Kotlin**, **Jetpack Compose**, **MVVM**, and **Coroutines / Flow**.
    - `00 78` is 120 bpm, shown as Aerobic
    - `00 B4` is 180 bpm, shown as High intensity
 
-If the device does not appear, turn off **Heart-rate devices only**.
-
 ## How it works
 
 ```mermaid
